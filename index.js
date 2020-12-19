@@ -1,43 +1,32 @@
 require('dotenv').config();
-var express          = require("express"),
+var express          = require('express'),
     app              = express(),
-    mongoose         = require("mongoose"),
-    User             = require("./models/User.js");
+    cors             = require('cors'),
+    bodyParser       = require('body-parser'),
+    errorHandler   = require("./handlers/error"),
+    authRoutes       = require("./Routes/Auth"),
+    eventRoutes       = require("./Routes/Event");
 
 
-// Database setup
-mongoose.connect(process.env.DATABASEURL , { useNewUrlParser: true  , useCreateIndex : true , seUnifiedTopology: true } , function(err){
-    console.log(err);
-});   
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended : true }));
+app.use(cors());
+
+// All routes is Here .... 
+app.use("/api/auth" , authRoutes);
+app.use("/user/:id" , eventRoutes);
 
 
-
-app.get("/" , function(req , res){
-    res.send("All data you will get here..");
+// Error handling
+app.use(function(req , res , next) {
+      let err = new Error("Not found");
+      err.status = 404;
+      next(err);
 });
 
-app.get("/createuser" , async function(req , res){
-    try{
-        let userobj = {
-            username : "2018.ajay",
-            firstname : "Ajay",
-            lastname:  "Gupta"
-        } 
-        let user = await User.create(userobj);
-        console.log(user);
-        res.send(user);
-        
-    }catch(err){
-        res.send(err);
-        console.log(err);
-    }
-});
-
-app.get("/google" , function(req ,res){
-    res.send("This data is comming from sever. Which is running on port 8080");
-});
+app.use(errorHandler);
 
 // Port setup
-app.listen(8081 , function(){
+app.listen(8000 , function(){
 	console.log("server started......");
 });
