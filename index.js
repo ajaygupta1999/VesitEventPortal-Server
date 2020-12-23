@@ -3,8 +3,9 @@ var express          = require('express'),
     app              = express(),
     cors             = require('cors'),
     bodyParser       = require('body-parser'),
-    errorHandler   = require("./handlers/error"),
+    errorHandler     = require("./handlers/error"),
     authRoutes       = require("./Routes/Auth"),
+    userRoutes       = require('./Routes/User'),
     eventRoutes       = require("./Routes/Event");
 
 
@@ -14,7 +15,8 @@ app.use(cors());
 
 // All routes is Here .... 
 app.use("/api/auth" , authRoutes);
-app.use("/user/:id" , eventRoutes);
+app.use(userRoutes);
+app.use("/api/" , eventRoutes);
 
 
 // Error handling

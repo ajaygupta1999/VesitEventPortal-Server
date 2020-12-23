@@ -3,7 +3,11 @@ const mongoose = require('mongoose');
 var GuestSchema = new mongoose.Schema({
     name : String,
     profession : String,
-    description : String
+    description : String,
+    inevent : [{
+        type : mongoose.Schema.Types.ObjectId,
+        ref : "Event"
+    }]
 });
 
 

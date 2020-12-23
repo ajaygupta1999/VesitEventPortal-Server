@@ -18,7 +18,11 @@ var EventtakerSchema = new mongoose.Schema({
             currentyear : Number,
             class : String,
         }
-    }
+    },
+    inevent : [{
+        type:  mongoose.Schema.Types.ObjectId,
+        ref : "Event"
+    }]
 });
 
 

@@ -5,16 +5,20 @@ var UserSchema = new mongoose.Schema({
     firstname : String,
     lastname : String,
     googleid : String,
-    imgurl : String,
+    phonenum : Number,
+    imgurl : {
+        dataid : String,
+        dataurl : String,
+        angle : Number
+    },
     role : String, 
     email : {
         type : String,
         unique : true,
         required : true
     },
-    imgurl : String,
     classdetails : {
-        branch : String,
+        department : String,
         class : String,
         rollno : Number,
         currentyearofstudy : Number,

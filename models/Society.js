@@ -10,10 +10,10 @@ var SocietySchema = new mongoose.Schema({
         type : mongoose.Schema.Types.ObjectId,
         ref : "User" 
     }],
-    council_head : {
+    council_head : [{
         type : mongoose.Schema.Types.ObjectId,
         ref  : "User"
-    },
+    }],
     events : [{
         type : mongoose.Schema.Types.ObjectId,
         ref : "Event"

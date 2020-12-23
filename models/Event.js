@@ -2,9 +2,16 @@ const mongoose = require('mongoose');
 
 var EventSchema = new mongoose.Schema({
    name : String,
-   dateandtime : Date,
+   date: String,
+   time : String,
    shortdesc : String,
    fulldesc : String,
+   category : String,
+   imgurl : {
+        dataid : String,
+        dataurl : String,
+        angle : Number
+   },
    creator : {
         type : mongoose.Schema.Types.ObjectId,
         ref : "User"
