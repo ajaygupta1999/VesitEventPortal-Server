@@ -6,7 +6,8 @@ var express          = require('express'),
     errorHandler     = require("./handlers/error"),
     authRoutes       = require("./Routes/Auth"),
     userRoutes       = require('./Routes/User'),
-    eventRoutes       = require("./Routes/Event");
+    eventRoutes       = require("./Routes/Event"),
+    societyRoutes      = require("./Routes/Society");
 
 
 app.use(bodyParser.json());
@@ -16,6 +17,7 @@ app.use(cors());
 // All routes is Here .... 
 app.use("/api/auth" , authRoutes);
 app.use(userRoutes);
+app.use("/api/society" , societyRoutes);
 app.use("/api/" , eventRoutes);
 
 

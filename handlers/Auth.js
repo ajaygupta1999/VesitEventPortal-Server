@@ -1,12 +1,82 @@
 const db = require("../models");
 const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require("google-auth-library");
-
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 
+// const login = async (req , res , next) => {
+//     try{
+//           let userdata;
+//           const { tokenId } = req.body;
+//           let resdata = await client.verifyIdToken({
+//               idToken : tokenId,
+//               audience : process.env.GOOGLE_CLIENT_ID
+//           });
+//           const { email_verified , name , picture , email} = resdata.payload;
+//           if(email_verified){
+//               let user = await db.User.findOne({email});
+//               if(user){ 
+//                  let token = jwt.sign({
+//                     username : user.username,
+//                     firstname : user.firstname,
+//                     lastname : user.lastname,
+//                     imgurl : user.imgurl,
+//                     id : user._id,
+//                     email : user.email,
+//                     classdetails : {
+//                         department : user.classdetails.department,
+//                         class : user.classdetails.class,
+//                         rollno : user.classdetails.rollno,
+//                         currentyearofstudy : user.classdetails.currentyearofstudy,
+//                         semester : user.classdetails.semester
+//                     },
+//                     societydetails : {
+//                         name : user.societydetails.name,
+//                         role : user.societydetails.name
+//                     }
+
+//                  } , process.env.JWT_SECRET_TOKEN);
+
+//                  return res.json({
+//                     username : user.username,
+//                     firstname : user.firstname,
+//                     lastname : user.lastname,
+//                     imgurl : user.imgurl,
+//                     id : user._id,
+//                     email : user.email,
+//                     classdetails : {
+//                         department : user.classdetails.department,
+//                         class : user.classdetails.class,
+//                         rollno : user.classdetails.rollno,
+//                         currentyearofstudy : user.classdetails.currentyearofstudy,
+//                         semester : user.classdetails.semester
+//                     },
+//                     societydetails : {
+//                         name : user.societydetails.name,
+//                         role : user.societydetails.name
+//                     },
+//                     token
+//                 });  
+//               }else{
+//                   return next({
+//                       message : "It seems that, you don't have account. Please Create your account."
+//                   });
+//               }
+               
+//            }else{
+//                return next({
+//                     messsage : "Please verify your email address. Then try to login."
+//                });
+//            }
+
+//     }catch(err){
+        
+//     }
+// }
+
+
 // Signup function
-async function signup(req , res, next) {
+const loginOrSignUp = async (req , res, next) => {
     try{
           let userdata;
           const { tokenId } = req.body;
@@ -76,6 +146,7 @@ async function signup(req , res, next) {
                 return res.json({
                     id : newuser._id,
                     username : newuser.username,
+                    imgurl : {},
                     email : newuser.email,
                     token
                 });
@@ -89,4 +160,4 @@ async function signup(req , res, next) {
     }
 }
 
-module.exports.signup = signup;
+module.exports.loginOrSignUp = loginOrSignUp;

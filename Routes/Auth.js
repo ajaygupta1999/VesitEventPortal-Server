@@ -1,9 +1,8 @@
 const express = require('express');
 const router =  express.Router();
-const { signup } = require("../handlers/Auth"); 
+const { loginOrSignUp } = require("../handlers/Auth"); 
 
-router.post("/signup/google" , signup);
-
+router.post("/loginOrSignUp/google" , loginOrSignUp);
 
 
 module.exports = router;

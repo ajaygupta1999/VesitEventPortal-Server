@@ -58,41 +58,7 @@ router.get("/create/society" , async function(req , res , next){
 router.post("/api/user/:id/create/personaldetails" , loginRequired , ensureCorrectUser , upload.single('image') , async function(req , res , next){
       try{
         const { firstname , lastname , phonenum } = req.body;
-        let imgobj = {};
-        if(req.file){
-                if(req.file.size > 1000000){
-                    let buffdata;
-                    let dimensions = sizeOf(req.file.path);
-                    await sharp(req.file.path)
-                    .resize({
-                        width: Math.floor(dimensions.width*0.5),
-                        height: Math.floor(dimensions.height*0.5),
-                        fit: sharp.fit.cover,
-                        position: sharp.strategy.entropy
-                    })
-                    .withMetadata()
-                    .toFormat("jpeg")
-                    .jpeg({ quality: 95 })
-                    .toBuffer({ resolveWithObject: true })
-                    .then(({ data, info }) => { 
-                        buffdata = data;
-                     })
-                    .catch(err => {
-                        console.error(err.message);
-                        return next({
-                            message : err.message
-                        });
-                    });
-
-                    var result = await uploadFromBuffer(buffdata);
-                }else{
-                    var result = await upload_get_url(req.file.path);
-                }
-                var angle = getAngle(result.exif.Orientation);
-                imgobj.dataurl = result.secure_url;
-                imgobj.dataid = result.public_id;
-                imgobj.angle =  angle;
-        }
+        let imgobj = await fileUpload(req.file);
         
         let user = await db.User.findById(req.params.id);
         user.username = firstname + " " + lastname,
@@ -178,42 +144,7 @@ router.post("/api/user/:id/create/classandsociety" , loginRequired , ensureCorre
 
 router.post("/api/user/:id/add/eventdetails" ,  loginRequired , ensureCorrectUser , upload.single('image') , async function(req , res , next){
     try{
-      let imgobj = {};
-      if(req.file){
-              if(req.file.size > 1000000){
-                  let buffdata;
-                  let dimensions = sizeOf(req.file.path);
-                  await sharp(req.file.path)
-                  .resize({
-                      width: Math.floor(dimensions.width*0.5),
-                      height: Math.floor(dimensions.height*0.5),
-                      fit: sharp.fit.cover,
-                      position: sharp.strategy.entropy
-                  })
-                  .withMetadata()
-                  .toFormat("jpeg")
-                  .jpeg({ quality: 95 })
-                  .toBuffer({ resolveWithObject: true })
-                  .then(({ data, info }) => { 
-                      buffdata = data;
-                   })
-                  .catch(err => {
-                      console.error(err.message);
-                      return next({
-                          message : err.message
-                      });
-                  });
-
-                  var result = await uploadFromBuffer(buffdata);
-              }else{
-                  var result = await upload_get_url(req.file.path);
-              }
-              var angle = getAngle(result.exif.Orientation);
-              imgobj.dataurl = result.secure_url;
-              imgobj.dataid = result.public_id;
-              imgobj.angle =  angle;
-      }
-      
+      let imgobj = await fileUpload(req.file);  
       let user = await db.User.findById(req.params.id);
       let dbsociety = await db.Society.findOne({name : user.societydetails.name});
       if(user){
@@ -362,16 +293,12 @@ router.post("/api/user/:id/add/:eventid/guestandsponsor" ,  loginRequired , ensu
       
     }catch(err){
          return next(err);
-    }
-
-
-    
-    
+    } 
 });
 
 
 
-async function fileUpload(file){
+const fileUpload = async (file) => {
      let imgobj = {};
       if(file){
               if(file.size > 1000000){
