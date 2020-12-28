@@ -1,4 +1,5 @@
 const express = require('express');
+const { loginRequired, ensureCorrectUser } = require('../middleware/auth');
 const db = require('../models');
 const router =  express.Router();
 
@@ -28,6 +29,27 @@ router.get("/event/allevents" ,async function(req , res){
          return next(err);
      }
     
+});
+
+router.get("/event/:eventid/register/user/:id" , loginRequired , ensureCorrectUser , async function(req , res , next){
+     try{
+
+        let user = await db.User.findById(req.params.id);  
+        let event = await db.Event.findById(req.params.eventid);
+        user.registered_events.push(event);
+        event.registrations.push(user);
+        user.save();
+        event.save();
+
+        return res.json({
+            user,
+            event
+        });
+
+     }catch(err){
+         console.log(err);
+         return next(err);
+     }
 });
 
 

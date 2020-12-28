@@ -5,7 +5,7 @@ const db      = require("../models");
 const cloudinary = require('cloudinary');
 const sharp      = require("sharp");
 const sizeOf       = require("image-size");
-
+const jwt             = require('jsonwebtoken');
 const { loginRequired , ensureCorrectUser }  = require("../middleware/auth");
 const Sponsor = require('../models/Sponsor');
 // storage file name from multer 
@@ -55,6 +55,8 @@ router.get("/create/society" , async function(req , res , next){
   });
 
 
+
+
 router.post("/api/user/:id/create/personaldetails" , loginRequired , ensureCorrectUser , upload.single('image') , async function(req , res , next){
       try{
         const { firstname , lastname , phonenum } = req.body;
@@ -68,14 +70,18 @@ router.post("/api/user/:id/create/personaldetails" , loginRequired , ensureCorre
         user.imgurl = imgobj;
         await user.save();
         console.log(user);
-        return res.json({
+
+        let userdata = {
             username : user.username,
             firstname : user.firstname,
             lastname : user.lastname,
             imgurl : user.imgurl,
             id : user._id,
             email : user.email,
-        });
+        }
+
+        let token = jwt.sign(userdata, process.env.JWT_SECRET_TOKEN);
+        return res.json({...userdata , token});
 
       }catch(err){
           return next({
@@ -120,19 +126,28 @@ router.post("/api/user/:id/create/classandsociety" , loginRequired , ensureCorre
       }
 
       console.log(dbsociety);
-      return res.json({
-        classdetails : {
-            department : user.classdetails.department,
-            class : user.classdetails.class,
-            rollno : user.classdetails.rollno,
-            currentyearofstudy : user.classdetails.currentyearofstudy,
-            semester : user.classdetails.semester
-        },
-        societydetails : {
-            name : user.societydetails.name,
-            role : user.societydetails.name
-        }
-      });
+      let userdata = {
+          username : user.username,
+          firstname : user.firstname,
+          lastname : user.lastname,
+          imgurl : user.imgurl,
+          id : user._id,
+          email : user.email,
+          classdetails : {
+              department : user.classdetails.department,
+              class : user.classdetails.class,
+              rollno : user.classdetails.rollno,
+              currentyearofstudy : user.classdetails.currentyearofstudy,
+              semester : user.classdetails.semester
+          },
+          societydetails : {
+              name : user.societydetails.name,
+              role : user.societydetails.role
+          }
+      }
+
+      let token = jwt.sign(userdata, process.env.JWT_SECRET_TOKEN);
+      return res.json({ ...userdata , token});
 
     }catch(err){
         return next({

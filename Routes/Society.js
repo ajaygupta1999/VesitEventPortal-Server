@@ -28,7 +28,6 @@ router.get("/:name/allevents" , async function(req , res , next){
         }); 
 
     }catch(err){
-        console.log(err);
         return next(err);
     }
 });
