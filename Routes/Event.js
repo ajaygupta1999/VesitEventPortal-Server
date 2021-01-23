@@ -66,6 +66,9 @@ router.post("/event/:eventid/register/user/:id" , loginRequired , ensureCorrectU
      }
 });
 
+
+
+
 router.post("/event/:eventid/unregister/user/:id" , loginRequired , ensureCorrectUser , async function(req , res , next){
     try{
         

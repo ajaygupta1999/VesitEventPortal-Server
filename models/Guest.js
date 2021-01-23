@@ -1,11 +1,25 @@
 const mongoose = require('mongoose');
 
 var GuestSchema = new mongoose.Schema({
-    name : String,
-    profession : String,
-    description : String,
+    role : String,
+    details : {
+        outsideperson : {
+            name : String,
+            profession : String
+        },
+        faculty : {
+            name : String,
+            profession : String
+        },
+        others : {
+            name : String,
+            branch : String,
+            currentyear : Number,
+            class : String
+        }
+    },
     inevent : [{
-        type : mongoose.Schema.Types.ObjectId,
+        type:  mongoose.Schema.Types.ObjectId,
         ref : "Event"
     }]
 });

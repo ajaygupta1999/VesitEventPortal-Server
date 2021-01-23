@@ -8,6 +8,11 @@ const sizeOf       = require("image-size");
 const jwt             = require('jsonwebtoken');
 const { loginRequired , ensureCorrectUser }  = require("../middleware/auth");
 const Sponsor = require('../models/Sponsor');
+const utf8      = require("utf8");
+const { events } = require('../models/Sponsor');
+
+
+
 // storage file name from multer 
 var storage = multer.diskStorage({
     filename: function(req, file, callback) {
@@ -34,6 +39,108 @@ cloudinary.config({
 });
 
 
+router.get("/create/guest" , async function(req , res , next){
+   try{
+   
+       let dataarr = [{
+            role : "outsideperson",
+            details : {
+              outsideperson : {
+                name : "Ajay Gupta",
+                profession : "I am a student"
+              }
+            }
+        } , 
+        {
+            role : "faculty",
+            details : {
+              faculty : {
+                name : "Vijay Gupta",
+                profession : "I am a student"
+              }
+            }
+        },
+        {
+          role : "others",
+          details : {
+            others : {
+              name : "Ajay Gupta",
+              class : "D12C",
+              branch : "CMPN",
+              currentyear : 3
+            }
+          }
+        }];
+        
+        let createdguest;
+        dataarr.forEach(async eachguest => {
+              createdguest = await db.Guest.create(eachguest);
+        });
+
+        return res.json({
+          message : "Guests created successfully"
+        })
+        
+     
+
+   }catch(err){
+      return next({
+        message : "got error while creating guest"
+      });
+   }
+});
+
+router.get("/create/eventtaker" , async function(req , res , next){
+  try{
+  
+      let dataarr = [{
+           role : "outsideperson",
+           details : {
+             outsideperson : {
+               name : "Ajay Gupta",
+               profession : "I am a student"
+             }
+           }
+       } , 
+       {
+           role : "faculty",
+           details : {
+             faculty : {
+               name : "Vijay Gupta",
+               profession : "I am a student"
+             }
+           }
+       },
+       {
+         role : "others",
+         details : {
+           others : {
+             name : "Ajay Gupta",
+             class : "D12C",
+             branch : "CMPN",
+             currentyear : 3
+           }
+         }
+       }];
+       
+       let createdeventtaker;
+       dataarr.forEach(async eacheventtaker => {
+           createdeventtaker = await db.Eventtaker.create(eacheventtaker);
+       });
+
+       return res.json({
+         message : "Eventtakers created successfully"
+       });
+       
+  }catch(err){
+     return next({
+       message : "got error while creating Eventtaker"
+     });
+  }
+});
+
+
+
 router.get("/create/society" , async function(req , res , next){
     try{
         let allsocietys = ["ieee" , "csi" , "iste", "isa"];
@@ -55,6 +162,24 @@ router.get("/create/society" , async function(req , res , next){
   });
 
 
+
+router.get("/api/user/:id/getallusers" , loginRequired , ensureCorrectUser , async function(req , res , next){
+   try{
+      let [guests , eventtakers , users] = await Promise.all([db.Guest.find({}) , db.Eventtaker.find({}) , db.User.find({}) ]);
+      
+      return res.json({
+        allusers : {
+            guests : guests,
+            eventtakers : eventtakers,
+            users : users
+          }
+      });
+    
+   }catch(err){
+     console.log(err.message);
+     return next(err);
+   }
+});
 
 
 router.post("/api/user/:id/create/personaldetails" , loginRequired , ensureCorrectUser , upload.single('image') , async function(req , res , next){
@@ -162,6 +287,7 @@ router.post("/api/user/:id/add/eventdetails" ,  loginRequired , ensureCorrectUse
       let imgobj = await fileUpload(req.file);  
       let user = await db.User.findById(req.params.id);
       let dbsociety = await db.Society.findOne({name : user.societydetails.name});
+      console.log(req.body.fulldesc);
       if(user){
           let event = {
             name : req.body.eventname,
@@ -176,6 +302,7 @@ router.post("/api/user/:id/add/eventdetails" ,  loginRequired , ensureCorrectUse
           } 
 
           let dbevent = await db.Event.create(event);
+          
           return res.json({
               id : dbevent._id, 
               name : dbevent.name,
@@ -197,120 +324,557 @@ router.post("/api/user/:id/add/eventdetails" ,  loginRequired , ensureCorrectUse
     }
 });
 
-router.post("/api/user/:id/add/:eventid/guestandsponsor" ,  loginRequired , ensureCorrectUser , upload.single('image') , async function(req , res , next){
-  try{
-      let imgobj = {};
-      if(req.body.issponsored === "true"){
-            imgobj = await fileUpload(req.file);
-      }
-      
-      let event = await db.Event.findById(req.params.eventid);
-      let user = await db.User.findById(req.params.id);
-      if(event.creator.toString() === user._id.toString()){
-         // Event is Sponsored Or NoT ====
-          if(req.body.issponsored === "true"){
-               let dbsponsor = await Sponsor.create({
-                    sponsorname : req.body.sponsorsname,
-                    imgurl:  imgobj,
-                    description :  req.body.sponsorsdetails
+
+router.post("/api/user/:userid/addevent/:eventid/addselected/guestoreventaker" , loginRequired  , async function(req , res , next){
+     try{
+        // find event 
+        // find subpart (guest or eventtaker) from req.body
+        // find user based on key
+        // find user does not exist
+          // add the user , eventtaker , guest in that array
+        let { target , roletype , role , key } = req.body;
+        let event = await db.Event.findById(req.params.eventid);
+        if(target === "guest"){
+            if(roletype === "user"){
+                // We are adding guest and type of the user selected is user
+                let user = await db.User.findById(key);
+                isUserExist = false;
+                event.guests.registered_guests.typeuser.forEach(user => {
+                   if(user._id.toString() === key.toString()){
+                       isUserExist = true;
+                   }
+                });
+                if(!isUserExist){
+                     event.guests.registered_guests.typeuser.push(user._id);
+                     await event.save();
+                }
+            }else if(roletype === "guest"){
+                // We are adding guest and type of the user selected is guest
+                let guest = await db.Guest.findById(key);
+                isGuestExist = false;
+                event.guests.registered_guests.typeguest.forEach(guest => {
+                  if(guest._id.toString() === key.toString()){
+                      isUserExist = true;
+                  }
                });
-               dbsponsor.inevent.push(event._id);
-               event.sponsor.push(dbsponsor._id);
-               await event.save();
-               await dbsponsor.save();
-          }  
-          // IF guest is comming from outside ====> Guest
-          if(req.body.isguest === "true"){
-              let guest = await db.Guest.create({
-                  name : req.body.name,
-                  profession : req.body.profession,
-                  description : req.body.description,
+               if(!isGuestExist){
+                    event.guests.registered_guests.typeguest.push(guest._id);
+                    await event.save();
+               }
+            }else{
+              // We are adding guest and type of the user selected is eventtaker
+              let eventtaker = await db.Eventtaker.findById(key);
+                isEventtakerExist = false;
+                event.guests.registered_guests.typeeventtaker.forEach(eventtaker => {
+                  if(eventtaker._id.toString() === key.toString()){
+                    isEventtakerExist = true;
+                  }
+               });
+               if(!isEventtakerExist){
+                    event.guests.registered_guests.typeeventtaker.push(eventtaker._id);
+                    await event.save();
+               }
+            }
+        }
+        if(target === "eventtaker"){
+          // Selected session is for Eventakers 
+            if(roletype === "user"){
+              // We are adding guest and type of the user selected is user
+              let user = await db.User.findById(key);
+              isUserExist = false;
+              event.eventtakers.registered_eventtakers.typeuser.forEach(user => {
+                if(user._id.toString() === key.toString()){
+                    isUserExist = true;
+                }
               });
-              guest.inevent.push(event._id);
-              await guest.save();
-              event.guest.push(guest._id);
-          }
-          // Eventtaker ===> Outside Guest
-          if(req.body.eventtakertype === "outsideguest"){
-                let outsideguest = await db.Eventtaker.create({
-                    role : "guest",
-                    details : {
-                      guest : {
-                        name : req.body.guestname,
-                        profession : req.body.guestprofession,
-                        description : req.body.guestdesc
-                      }
-                    } 
-                });
-                outsideguest.inevent.push(event._id);
-                await outsideguest.save();
-                let unreg_data = {
-                    role : "guest",
-                    takers : [outsideguest._id]
-                }
-                event.eventtaker.unregistered_eventtaker.push(unreg_data);
-                await event.save();
-          }
-          // EventTaker ====> Faculty
-          if(req.body.eventtakertype === "collegefaculty"){
-                let faculty = await db.Eventtaker.create({
-                  role : "faculty",
-                  details : {
-                    faculty : {
-                        name : req.body.facultyname,
-                        description : req.body.facultydesc
-                    }
+              if(!isUserExist){
+                  event.eventtakers.registered_eventtakers.typeuser.push(user._id);
+                  await event.save();
+              }
+            }else if(roletype === "guest"){
+                // We are adding guest and type of the user selected is guest
+                let guest = await db.Guest.findById(key);
+                isGuestExist = false;
+                event.eventtakers.registered_eventtakers.typeguest.forEach(guest => {
+                  if(guest._id.toString() === key.toString()){
+                      isUserExist = true;
                   }
-                });
-                faculty.inevent.push(event._id);
-                await faculty.save();
-                let facu_data = {
-                    role : "faculty",
-                    takers : [faculty._id]
-                }
-                event.eventtaker.unregistered_eventtaker.push(facu_data);
-                await event.save();
-          }
-          // Event taker ====> Others  
-          if(req.body.eventtakertype === "others"){
-                let dbother = await db.Eventtaker.create({
-                  role : "others",
-                  details : {
-                    others : {
-                        name : req.body.othersname,
-                        branch : req.body.othersdepartment,
-                        currentyear : Number(req.body.otherscurrentyear),
-                        class : req.body.othersclass
-                    }
+              });
+              if(!isGuestExist){
+                    event.eventtakers.registered_eventtakers.typeguest.push(guest._id);
+                    await event.save();
+              }
+            }else{
+              // We are adding guest and type of the user selected is eventtaker
+              let eventtaker = await db.Eventtaker.findById(key);
+                isEventtakerExist = false;
+                event.eventtakers.registered_eventtakers.typeeventtaker.forEach(eventtaker => {
+                  if(eventtaker._id.toString() === key.toString()){
+                      isEventtakerExist = true;
                   }
-                });
-                dbother.inevent.push(event._id);
-                await dbother.save();
-                let others_data = {
-                    role : "others",
-                    takers : [dbother._id]
-                }
-                event.eventtaker.unregistered_eventtaker.push(others_data);
-                await event.save();
+              });
+              if(!isEventtakerExist){
+                    event.eventtakers.registered_eventtakers.typeeventtaker.push(eventtaker._id);
+                    await event.save();
+              }
+            }
+        }
+         
+        let populatedevent = await db.Event.findById(req.params.eventid).populate({
+           path : "guests.registered_guests eventtakers.registered_eventtakers" , populate : { path : "typeuser typeguest typeeventtaker" }
+        }).exec();
+
+        let selectedpersons = []; 
+
+        if(target === "guest"){
+          if(populatedevent.guests.registered_guests.typeuser && populatedevent.guests.registered_guests.typeuser.length > 0){
+              let allusers = populatedevent.guests.registered_guests.typeuser.map(user => {
+                  let newuser = {};
+                  newuser.roletype = "user";
+                  newuser.data = user;
+                  return newuser;
+              });
+              selectedpersons = selectedpersons.concat(allusers);
           }
+          if(populatedevent.guests.registered_guests.typeguest && populatedevent.guests.registered_guests.typeguest.length > 0){
+              let allguests = populatedevent.guests.registered_guests.typeguest.map(guest => {
+                  let newguest = {};
+                  newguest.roletype = "guest";
+                  newguest.data = guest;
+                  return newguest; 
+                  
+              })
+              selectedpersons = selectedpersons.concat(allguests);
+          }
+          if(populatedevent.guests.registered_guests.typeeventtaker && populatedevent.guests.registered_guests.typeeventtaker.length > 0){
+             let alleventtakers = populatedevent.guests.registered_guests.typeeventtaker.map(eventtaker => {
+                let neweventtaker = {};
+                neweventtaker.data = eventtaker;
+                neweventtaker.roletype = "eventtaker";
+                return neweventtaker;
+             });
+             selectedpersons = selectedpersons.concat(alleventtakers);
+          }
+        }
+        if(target === "eventtaker"){
+            if(populatedevent.eventtakers.registered_eventtakers.typeuser.length > 0){
+                let allusers = populatedevent.eventtakers.registered_eventtakers.typeuser.map(user => {
+                  let newuser = {};
+                  newuser.roletype = "user";
+                  newuser.data = user;
+                  return newuser;
+                });
+                selectedpersons = selectedpersons.concat(allusers);
+            }
+            if(populatedevent.eventtakers.registered_eventtakers.typeguest.length > 0){
+                let allguests = populatedevent.eventtakers.registered_eventtakers.typeguest.map(guest => {
+                    let newguest = {};
+                    newguest.roletype = "guest";
+                    newguest.data = guest;
+                    return newguest; 
+                });
+                selectedpersons = selectedpersons.concat(allguests);
+            }
+            if(populatedevent.eventtakers.registered_eventtakers.typeeventtaker.length > 0){
+               let alleventakers = populatedevent.eventtakers.registered_eventtakers.typeeventtaker.map(eventtaker => {
+                    let neweventtaker = {};
+                    neweventtaker.data = eventtaker;
+                    neweventtaker.roletype = "eventtaker";
+                    return neweventtaker;
+               });
+               selectedpersons = selectedpersons.concat(alleventakers);
+            }
+        }
 
-          let belongingsociety = await db.Society.findById(event.society);
-          belongingsociety.events.push(event._id);
-          belongingsociety.save();
-
-          return res.json(event);
-
-      }
-
-       return res.json({
-            event
+        return res.json({
+          target :  target,
+          selectedpersons :  selectedpersons 
         });
-      
-    }catch(err){
-         return next(err);
-    } 
+
+     }catch(err){
+       console.log(err.message);
+        return next(err);
+     }
 });
 
+
+
+router.delete("/api/user/:userid/addevent/:eventid/remove/selected/:target/:roletype/:role/:key" , loginRequired , async function(req , res , next){
+   try{
+      let event = await db.Event.findById(req.params.eventid);
+      if(req.params.target === "guest"){
+           if(req.params.roletype === "user"){
+               let index;
+               for(let i = 0 ; i < event.guests.registered_guests.typeuser.length ; i++){
+                  if(req.params.key.toString() === event.guests.registered_guests.typeuser[i].toString()){
+                     index = i;
+                     break;
+                  }
+               }
+               event.guests.registered_guests.typeuser.splice(index , 1);
+               await event.save();
+           }
+
+           if(req.params.roletype === "guest"){
+              let index;
+              for(let i = 0 ; i < event.guests.registered_guests.typeguest.length ; i++){
+                  if(req.params.key.toString() === event.guests.registered_guests.typeguest[i].toString()){
+                      index = i;
+                      break;
+                  }
+              }
+              event.guests.registered_guests.typeguest.splice(index , 1);
+              await event.save();
+           }
+
+           if(req.params.roletype === "eventtaker"){
+              let index;
+              for(let i = 0 ; i < event.guests.registered_guests.typeeventtaker.length ; i++){
+                if(req.params.key.toString() === event.guests.registered_guests.typeeventtaker[i].toString()){
+                    index = i;
+                    break;
+                }
+              }
+              event.guests.registered_guests.typeeventtaker.splice(index , 1);
+              await event.save();
+          }
+      }
+
+      if(req.params.target === "eventtaker"){
+            if(req.params.roletype === "user"){
+                let index;
+                for(let i = 0 ; i < event.eventtakers.registered_eventtakers.typeuser.length ; i++){
+                  if(req.params.key.toString() === event.eventtakers.registered_eventtakers.typeuser[i].toString()){
+                      index = i;
+                      break;
+                  }
+                }
+                event.eventtakers.registered_eventtakers.typeuser.splice(index , 1);
+                await event.save();
+            }
+
+            if(req.params.roletype === "guest"){
+                let index;
+                for(let i = 0 ; i < event.eventtakers.registered_eventtakers.typeguest.length ; i++){
+                    if(req.params.key.toString() === event.eventtakers.registered_eventtakers.typeguest[i].toString()){
+                        index = i;
+                        break;
+                    }
+                }
+                event.eventtakers.registered_eventtakers.typeguest.splice(index , 1);
+                await event.save();
+            }
+
+            if(req.params.roletype === "eventtaker"){
+                let index;
+                for(let i = 0 ; i < event.eventtakers.registered_eventtakers.typeeventtaker.length ; i++){
+                  if(req.params.key.toString() === event.eventtakers.registered_eventtakers.typeeventtaker[i].toString()){
+                      index = i;
+                      break;
+                  }
+                }
+                event.eventtakers.registered_eventtakers.typeeventtaker.splice(index , 1);
+                await event.save();
+            }
+      }
+
+      let populatedevent = await db.Event.findById(req.params.eventid).populate({
+        path : "guests.registered_guests eventtakers.registered_eventtakers" , populate : { path : "typeuser typeguest typeeventtaker" }
+     }).exec();
+    
+     let selectedpersons = []; 
+
+     if(req.params.target === "guest"){
+       if(populatedevent.guests.registered_guests.typeuser && populatedevent.guests.registered_guests.typeuser.length > 0){
+           let allusers = populatedevent.guests.registered_guests.typeuser.map(user => {
+               let newuser = {};
+               newuser.roletype = "user";
+               newuser.data = user;
+               return newuser;
+           });
+           selectedpersons = selectedpersons.concat(allusers);
+       }
+       if(populatedevent.guests.registered_guests.typeguest && populatedevent.guests.registered_guests.typeguest.length > 0){
+           let allguests = populatedevent.guests.registered_guests.typeguest.map(guest => {
+               let newguest = {};
+               newguest.roletype = "guest";
+               newguest.data = guest;
+               return newguest; 
+               
+           })
+           selectedpersons = selectedpersons.concat(allguests);
+       }
+       if(populatedevent.guests.registered_guests.typeeventtaker && populatedevent.guests.registered_guests.typeeventtaker.length > 0){
+          let alleventtakers = populatedevent.guests.registered_guests.typeeventtaker.map(eventtaker => {
+             let neweventtaker = {};
+             neweventtaker.data = eventtaker;
+             neweventtaker.roletype = "eventtaker";
+             return neweventtaker;
+          });
+          selectedpersons = selectedpersons.concat(alleventtakers);
+       }
+     }
+     if(req.params.target === "eventtaker"){
+         if(populatedevent.eventtakers.registered_eventtakers.typeuser.length > 0){
+             let allusers = populatedevent.eventtakers.registered_eventtakers.typeuser.map(user => {
+               let newuser = {};
+               newuser.roletype = "user";
+               newuser.data = user;
+               return newuser;
+             });
+             selectedpersons = selectedpersons.concat(allusers);
+         }
+         if(populatedevent.eventtakers.registered_eventtakers.typeguest.length > 0){
+             let allguests = populatedevent.eventtakers.registered_eventtakers.typeguest.map(guest => {
+                 let newguest = {};
+                 newguest.roletype = "guest";
+                 newguest.data = guest;
+                 return newguest; 
+             });
+             selectedpersons = selectedpersons.concat(allguests);
+         }
+         if(populatedevent.eventtakers.registered_eventtakers.typeeventtaker.length > 0){
+            let alleventakers = populatedevent.eventtakers.registered_eventtakers.typeeventtaker.map(eventtaker => {
+                 let neweventtaker = {};
+                 neweventtaker.data = eventtaker;
+                 neweventtaker.roletype = "eventtaker";
+                 return neweventtaker;
+            });
+            selectedpersons = selectedpersons.concat(alleventakers);
+         }
+     }
+
+     return res.json({
+       target :  req.params.target,
+       selectedpersons :  selectedpersons 
+     });
+      
+   }catch(err){
+     console.log(err.message);
+   }
+});
+
+// Adding guest who does not exist on our portal
+router.post("/api/user/:userid/addevent/:eventid/addperson/guestoreventakerorsponsor" , loginRequired , async function(req, res , next){
+     try{
+         
+        // Three type of data insertion (guest , eventtaker , sponsor) ====>
+        // target == guest
+           // roletype == guest
+           // three types outsideperson , faculty , others
+           // // based on that insert created guest
+        let event = await db.Event.findById(req.params.eventid);
+        let dataobj = {};
+        dataobj.role = req.body.role;
+        if(req.body.role === "outsideperson" || req.body.role === "faculty"){
+            dataobj.details = {
+              [req.body.role] : {
+                name : req.body.name,
+                profession : req.body.profession
+              }
+            }
+        }
+        if(req.body.role === "others"){
+            dataobj.details = {
+              [req.body.role] : {
+                name : req.body.name,
+                class : req.body.class,
+                branch : req.body.branch,
+                currentyear : req.body.currentyear
+              }
+            }
+        }
+        console.log(dataobj);
+        if(req.body.target === "guest"){
+           if(req.body.roletype === "guest"){
+              let createdguest = await db.Guest.create(dataobj);
+              createdguest.inevent.push(event._id);
+              await createdguest.save();
+              event.guests.unregistered_guests.push(createdguest._id);
+              await event.save();
+           }
+        }
+        if(req.body.target === "eventtaker"){
+           if(req.body.roletype === "eventtaker"){
+              let createdeventtaker = await db.Eventtaker.create(dataobj);
+              createdeventtaker.inevent.push(event._id);
+              await createdeventtaker.save();
+              event.eventtakers.unregistered_eventtakers.push(createdeventtaker._id);
+              await event.save();
+           }
+        }
+
+        let populatedevent = await db.Event.findById(req.params.eventid).populate({
+          path : "guests.unregistered_guests eventtakers.unregistered_eventtakers"
+       }).exec();
+      
+       let addedpersons = []; 
+  
+       if(req.body.target === "guest"){
+         console.log("Loopin data ===>" , populatedevent.guests.unregistered_guests);
+            let addedguests = populatedevent.guests.unregistered_guests.map(guest => {
+                let dataobj = {};
+                dataobj.roletype = "guest";
+                dataobj.data = guest;
+                return dataobj;
+            });
+            addedpersons = addedpersons.concat(addedguests);
+       }
+       if(req.body.target === "eventtaker"){
+           let addedeventtakers = populatedevent.eventtakers.unregistered_eventtakers.map(eventtaker => {
+                let dataobj = {};
+                dataobj.roletype = "eventtaker";
+                dataobj.data = eventtaker;
+                return dataobj;
+           });
+           addedpersons = addedpersons.concat(addedeventtakers);
+       }
+      
+       return res.json({
+         target :  req.body.target,
+         addedpersons :  addedpersons 
+       });
+
+
+     }catch(err){
+        console.log(err);
+        return next(err);
+
+     }
+});
+
+
+router.delete("/api/user/:userid/addevent/:eventid/remove/added/:target/:roletype/:role/:key" , loginRequired , async function(req , res , next){
+     try{
+         
+        // Take action based on target ====>
+           // guest 
+             // remove guest from array of events
+           // eventtaker 
+            // remove eventtaker from the array of event
+        // then send data
+        let event = await db.Event.findById(req.params.eventid);
+        if(req.params.target === "guest"){
+            if(req.params.roletype === "guest"){
+                let index;
+                for(let i = 0 ; i < event.guests.unregistered_guests.length ; i++){
+                    if(req.params.key.toString() === event.guests.unregistered_guests[i].toString()){
+                        index = i;
+                        break;
+                    }
+                }
+                event.guests.unregistered_guests.splice(index , 1);
+                await event.save();
+            }
+        }
+        
+        if(req.params.target === "eventtaker"){
+          if(req.params.roletype === "eventtaker"){
+              let index;
+              for(let i = 0 ; i < event.eventtakers.unregistered_eventtakers.length ; i++){
+                  if(req.params.key.toString() === event.eventtakers.unregistered_eventtakers[i].toString()){
+                      index = i;
+                      break;
+                  }
+              }
+              event.eventtakers.unregistered_eventtakers.splice(index , 1);
+              await event.save();
+              
+          }
+        }
+        
+        let populatedevent = await db.Event.findById(req.params.eventid).populate({
+          path : "guests.unregistered_guests eventtakers.unregistered_eventtakers"
+        }).exec();
+
+        if(req.params.target === "guest"){
+          if(req.params.roletype === "guest"){
+              return res.json({
+                target : "guest",
+                removedpersons : populatedevent.guests.unregistered_guests
+              });
+          }
+        }
+
+        if(req.params.target === "eventtaker"){
+          if(req.params.roletype === "eventtaker"){
+              return res.json({
+                target : "eventtaker",
+                removedpersons : populatedevent.eventtakers.unregistered_eventtakers
+              });
+          }
+        }
+
+     }catch(err){
+       console.log(err);
+       return next(err);
+     }
+});
+
+router.post("/api/user/:userid/addevent/:eventid/addsponsor/sponsor" , loginRequired , upload.single('image') , async function(req , res , next){
+    
+    try{
+        let imgdata = {};
+        if(req.file){
+            imgdata = await fileUpload(req.file);
+        }
+      
+        let sponsorobj = {
+          name : req.body.name,
+          description : req.body.details,
+          imgurl : imgdata
+        }
+        
+        let event = await db.Event.findById(req.params.eventid);
+        if(event){
+            if(req.body.target === "sponsor"){
+                let sponsor = await db.Sponsor.create(sponsorobj);
+                sponsor.inevent.push(event._id);
+                await sponsor.save();
+                event.sponsors.push(sponsor._id);
+                await event.save();
+            }
+        }
+
+        let populatedevent = await db.Event.findById(req.params.eventid).populate("sponsors").exec();
+        return res.json({
+          target : "sponsor",
+          sponsors : populatedevent.sponsors
+        });
+
+    }catch(err){
+      console.log(err);
+      return next(err);
+    }
+    
+});
+
+router.delete("/api/user/:userid/addevent/:eventid/remove/sponsor/:target/:key" , loginRequired  , async function(req , res , next){
+   try{ 
+       if(req.params.target === "sponsor"){
+           let event = await db.Event.findById(req.params.eventid);
+           let index;
+           for(let i = 0 ; i < event.sponsors.length ; i++){
+            if(req.params.key.toString() === event.sponsors[i].toString()){
+                  index = i;
+                  break;
+            }
+          }
+          event.sponsors.splice(index , 1);
+          await event.save();
+
+          let populatedevent = await db.Event.findById(req.params.eventid).populate("sponsors").exec();
+          console.log(populatedevent);
+          return res.json({
+            target : "sponsor",
+            sponsors : populatedevent.sponsors
+          });
+       }
+   }catch(err){
+       console.log(err);
+       return next(err);
+   }
+});
 
 
 const fileUpload = async (file) => {

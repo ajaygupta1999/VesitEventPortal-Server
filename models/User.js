@@ -26,7 +26,8 @@ var UserSchema = new mongoose.Schema({
     },
     societydetails : {
         name : String,
-        role : String
+        role : String,
+        specificrole : String
     },
     registered_events : [{
         type : mongoose.Schema.Types.ObjectId,

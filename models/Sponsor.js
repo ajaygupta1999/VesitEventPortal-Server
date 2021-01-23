@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 var SponsorSchema = new mongoose.Schema({
-    sponsorname : String,
+    name : String,
     imgurl : {
         dataid : String,
         dataurl : String,
@@ -17,7 +17,6 @@ var SponsorSchema = new mongoose.Schema({
         type : mongoose.Schema.Types.ObjectId,
         ref : "Event"
     }]
-    
 });
 
 

@@ -3,14 +3,13 @@ const mongoose = require('mongoose');
 var EventtakerSchema = new mongoose.Schema({
     role : String,
     details : {
-        guest : {
+        outsideperson : {
             name : String,
-            profession : String,
-            description : String
+            profession : String
         },
         faculty : {
             name : String,
-            description : String
+            profession : String
         },
         others : {
             name : String,

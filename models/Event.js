@@ -5,7 +5,7 @@ var EventSchema = new mongoose.Schema({
    date: String,
    time : String,
    shortdesc : String,
-   fulldesc : String,
+   fulldesc : "Buffer",
    category : String,
    imgurl : {
         dataid : String,
@@ -24,29 +24,49 @@ var EventSchema = new mongoose.Schema({
        type : mongoose.Schema.Types.ObjectId,
        ref : "Society"
    },
-   guest : [{
-       type : mongoose.Schema.Types.ObjectId,
-       ref : "Guest"
-   }],
-   sponsor : [{
+   guests : {
+        registered_guests : {
+            typeuser : [{
+                type : mongoose.Schema.Types.ObjectId,
+                ref : "User"
+            }],
+            typeguest : [{
+                type : mongoose.Schema.Types.ObjectId,
+                ref : "Guest"
+            }] ,
+            typeeventtaker : [{
+                type : mongoose.Schema.Types.ObjectId,
+                ref : "Eventtaker"
+            }]
+        },
+        unregistered_guests : [{
+            type : mongoose.Schema.Types.ObjectId,
+            ref : "Guest"
+        }]
+   },
+   sponsors : [{
        type : mongoose.Schema.Types.ObjectId,
        ref : "Sponsor"
    }],
-   eventtaker : {
-       registered_eventtaker : [{
-           role : String,
-           takers : [{
+   eventtakers : {
+        registered_eventtakers : {
+            typeuser : [{
                 type : mongoose.Schema.Types.ObjectId,
                 ref : "User"
-           }]
-       }],
-       unregistered_eventtaker : [{
-           role : String,
-           takers : [{
+            }],
+            typeguest : [{
+                type : mongoose.Schema.Types.ObjectId,
+                ref : "Guest"
+            }] ,
+            typeeventtaker : [{
                 type : mongoose.Schema.Types.ObjectId,
                 ref : "Eventtaker"
-           }]
-       }]
+            }]
+        },
+        unregistered_eventtakers : [{
+            type : mongoose.Schema.Types.ObjectId,
+            ref : "Eventtaker" 
+        }]
    },
    certificateurl : [{
         dataid : String,
