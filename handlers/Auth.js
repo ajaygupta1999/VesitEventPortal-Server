@@ -16,15 +16,21 @@ const loginOrSignUp = async (req , res, next) => {
           });
           const { email_verified , name , picture , email} = resdata.payload;
           if(email_verified){
-              let user = await db.User.findOne({email});
+              let user = await await db.User.findOne({email});
+              let fulluserdata = await db.User.findOne({email}).populate({
+                    path : "registered_events" ,
+                    populate : { path : "guests.registered_guests eventtakers.registered_eventtakers guests.unregistered_guests eventtakers.unregistered_eventtakers sponsors" ,
+                    populate : { path : "typeuser typeguest typeeventtaker" } }
+              }).exec();
+
               if(user){ 
-                
                  let userdata = {
+                    role : user.role ? user.role : null, 
                     username : user.username,
                     firstname : user.firstname,
                     lastname : user.lastname,
                     imgurl : user.imgurl,
-                    id : user._id,
+                    _id : user._id,
                     email : user.email,
                     classdetails : {
                         department : user.classdetails.department,
@@ -35,32 +41,54 @@ const loginOrSignUp = async (req , res, next) => {
                     },
                     societydetails : {
                         name : user.societydetails.name,
-                        role : user.societydetails.role
-                    }
+                        role : user.societydetails.role,
+                        specificrole : user.societydetails.specificrole
+                    },
+                    registered_events : user.registered_events ? user.registered_events : []
                  }
-
+                    
                  let token = jwt.sign(userdata, process.env.JWT_SECRET_TOKEN);
-
-                 return res.json({ ...userdata , token });   
+                 console.log(token);
+                 return res.json({ 
+                     token,
+                     userdetails : userdata,
+                     registeredevents : fulluserdata.registered_events ? fulluserdata.registered_events : []
+                });   
               }
                 // Create new user
                 // Create jwt token 
-               let newuser = await db.User.create({
+                let firstname = "";
+                let lastname = "";
+                let namearr = name.split(" ");
+                if(namearr.length == 1){
+                    firstname = namearr[0];
+                }else{
+                    firstname = namearr[0];
+                    lastname = namearr[1];
+                }
+
+                let newuser = await db.User.create({
+                    firstname,
+                    lastname,
                     username : name,
                     email : email,
                 });
                 
                 let userdata = {
-                    id : newuser._id,
+                    _id : newuser._id,
                     username : newuser.username,
-                    email : newuser.email
+                    email : newuser.email,
+                    firstname : newuser.firstname,
+                    lastname : newuser.lastname,
+                    imgurl : {},
+                    registered_events : []
                 }
 
                 let token = jwt.sign(userdata , process.env.JWT_SECRET_TOKEN);      
                 return res.json({
-                    ...userdata,
-                    imgurl : {},
-                    token
+                    userdetails : userdata,
+                    token,
+                    registeredevents : []
                 });
 
            }else{
@@ -69,6 +97,7 @@ const loginOrSignUp = async (req , res, next) => {
                });
            }
     }catch(err){
+        console.log(err);
         return next(err);
     }
 }

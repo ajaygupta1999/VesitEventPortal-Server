@@ -2,25 +2,36 @@ const mongoose = require('mongoose');
 
 var SocietySchema = new mongoose.Schema({
     name : String,
-    normal_member : [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User"
+    title : String,
+    societyimage : {
+        dataid : String,
+        dataurl : String,
+        angle : Number
+    },
+    societybackground : {
+        dataid : String,
+        dataurl : String,
+        angle : Number
+    },
+    aboutsociety : String,
+    chairperson : {
+        email: String
+    },
+    normal_members : [{
+        email : String
     }],
     council_members : [{
-        type : mongoose.Schema.Types.ObjectId,
-        ref : "User" 
+        email : String
     }],
-    council_head : [{
-        type : mongoose.Schema.Types.ObjectId,
-        ref  : "User"
+    council_heads : [{
+        email : String
     }],
     events : [{
         type : mongoose.Schema.Types.ObjectId,
         ref : "Event"
     }],
-    facult_details : {
-        name : String,
-        description : String
+    faculty : {
+        email : String
     }
 });
 

@@ -5,12 +5,16 @@ var EventSchema = new mongoose.Schema({
    date: String,
    time : String,
    shortdesc : String,
-   fulldesc : "Buffer",
+   fulldesc : String,
    category : String,
    imgurl : {
         dataid : String,
         dataurl : String,
         angle : Number
+   },
+   registrationformlink : {
+       haveregistrationform : false,
+       formlink : String
    },
    creator : {
         type : mongoose.Schema.Types.ObjectId,

@@ -7,34 +7,43 @@ const router =  express.Router();
 
 router.get("/event/allevents" ,async function(req , res){
      try{
-        let dballevents = await db.Event.find({});
+
+        let dballevents = await db.Event.find({}).populate({
+            path : "guests.registered_guests eventtakers.registered_eventtakers guests.unregistered_guests eventtakers.unregistered_eventtakers sponsors", 
+            populate : { path : "typeuser typeguest typeeventtaker" }
+        }).exec();
+
         let allEvents = [];
-        dballevents.forEach(async function(dbevent){
-            var eventobj = {
-                id : dbevent._id,
-                name : dbevent.name,
-                date : dbevent.date,
-                time : dbevent.time,
-                category : dbevent.category,
-                imgurl : dbevent.imgurl,
-                shortdesc : dbevent.shortdesc,
-                fulldesc : dbevent.fulldesc,
-            }
-            await allEvents.push(eventobj);
-        });
+
+        allEvents = dballevents;
         return res.json({
             allEvents
-        });  
+        });
+        
+        // dballevents.forEach(async function(dbevent){
+        //     var eventobj = {
+        //         id : dbevent._id,
+        //         name : dbevent.name,
+        //         date : dbevent.date,
+        //         time : dbevent.time,
+        //         category : dbevent.category,
+        //         imgurl : dbevent.imgurl,
+        //         shortdesc : dbevent.shortdesc,
+        //         fulldesc : dbevent.fulldesc,
+        //     }
+        //     await allEvents.push(eventobj);
+        // });
+         
      }catch(err){
          return next(err);
      }
     
 });
 
-router.post("/event/:eventid/register/user/:id" , loginRequired , ensureCorrectUser , async function(req , res , next){
+router.post("/event/:eventid/register/user/:userid" , loginRequired , ensureCorrectUser , async function(req , res , next){
      try{
        
-        let user = await db.User.findById(req.params.id);  
+        let user = await db.User.findById(req.params.userid);  
         let event = await db.Event.findById(req.params.eventid);
         if( user && event ){
             console.log(event);
@@ -44,9 +53,14 @@ router.post("/event/:eventid/register/user/:id" , loginRequired , ensureCorrectU
                 event.registrations.push(user._id);
                 await user.save();
                 await event.save();
-                console.log(user.registered_events);
+                
+                let updatedevent = await db.Event.findById(req.params.eventid).populate({
+                    path : "guests.registered_guests eventtakers.registered_eventtakers guests.unregistered_guests eventtakers.unregistered_eventtakers sponsors society registrations creator", 
+                    populate : { path : "typeuser typeguest typeeventtaker" }
+                }).exec();
+    
                 return res.json({
-                    event
+                    event : updatedevent 
                 });
             }else{
                 return next({ 
@@ -59,7 +73,6 @@ router.post("/event/:eventid/register/user/:id" , loginRequired , ensureCorrectU
             });
         }
        
-
      }catch(err){
          console.log(err);
          return next(err);
@@ -69,10 +82,10 @@ router.post("/event/:eventid/register/user/:id" , loginRequired , ensureCorrectU
 
 
 
-router.post("/event/:eventid/unregister/user/:id" , loginRequired , ensureCorrectUser , async function(req , res , next){
+router.post("/event/:eventid/unregister/user/:userid" , loginRequired , ensureCorrectUser , async function(req , res , next){
     try{
         
-       let user = await db.User.findById(req.params.id);  
+       let user = await db.User.findById(req.params.userid);  
        let event = await db.Event.findById(req.params.eventid);
        let isexist = event.registrations.filter(eachuser => eachuser.toString() === user._id.toString());
        if(isexist.length === 1){
@@ -82,8 +95,14 @@ router.post("/event/:eventid/unregister/user/:id" , loginRequired , ensureCorrec
             event.registrations = neweventarr;
             await user.save();
             await event.save();
+
+            let updatedevent = await db.Event.findById(req.params.eventid).populate({
+                path : "guests.registered_guests eventtakers.registered_eventtakers guests.unregistered_guests eventtakers.unregistered_eventtakers sponsors society registrations creator", 
+                populate : { path : "typeuser typeguest typeeventtaker" }
+            }).exec();
+
             return res.json({
-                event
+                event : updatedevent
             });
        }else{
            return next({
@@ -97,10 +116,11 @@ router.post("/event/:eventid/unregister/user/:id" , loginRequired , ensureCorrec
     }
 });
 
-router.get("/event/user/:id/registeredevents" , loginRequired , ensureCorrectUser , async function(req , res, next){
+
+router.get("/event/user/:userid/registeredevents" , loginRequired , ensureCorrectUser , async function(req , res, next){
     try{
 
-        let user = await db.User.findById(req.params.id).populate("registered_events");
+        let user = await db.User.findById(req.params.userid).populate("registered_events");
         if(user){
             return res.json({
                 events : user.registered_events
