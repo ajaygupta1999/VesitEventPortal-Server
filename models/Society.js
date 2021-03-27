@@ -15,23 +15,47 @@ var SocietySchema = new mongoose.Schema({
     },
     aboutsociety : String,
     chairperson : {
-        email: String
+        email: String,
+        name: String
     },
     normal_members : [{
-        email : String
+        email : String,
+        name : String
     }],
     council_members : [{
-        email : String
+        email : String,
+        name : String,
+        role : String,
+        specificrole : String
     }],
     council_heads : [{
-        email : String
+        email : String,
+        name : String
     }],
     events : [{
         type : mongoose.Schema.Types.ObjectId,
         ref : "Event"
     }],
     faculty : {
-        email : String
+        email : String,
+        name : String
+    },
+    token : {
+        type : mongoose.Schema.Types.ObjectId,
+        ref : "Token"
+    },
+    spreadsheets : {
+        useremail : String,
+        sheetid : String,
+        council_member : {
+            sheetid : String
+        },
+        normal_members : {
+            sheetid : String
+        },
+        facultyorchairperson : {
+            sheetid : String
+        } 
     }
 });
 

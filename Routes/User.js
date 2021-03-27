@@ -208,29 +208,45 @@ router.get("/create/society" , async function(req , res , next){
           title : "Greatest society of all time.",
           aboutsociety : "<p>ISTE vesit</p>",
           chairperson : {
+            name : "Sunita Shahu",
             email : "2018.ajay.gupta@ves.ac.in"
           },
           normal_members : [
-             {
-               email : "2018.ajay.gupta@ves.ac.in"
-             },
-             {
-               email : "ajay.u.gupta14@gmail.com"
-             }
+            {
+              name : "Ajay Gupta",
+              email : "aj@gmail.com"
+            }
           ],
           council_members : [
-             {
-               email : "vesiteventsportal@gmail.com"
-             }
+            {
+                name :  "Ajay G",
+                email : "vi@gmail.com",
+                role : "council member",
+                specificrole : "Technical Team"
+            },
+            {
+                name : "Ajay Gupta",
+                email : "ajay.u.gupta14@gmail.com",
+                role : "council member",
+                specificrole : "Technical Team"
+            },
+            {
+                name : "Ajay G",
+                email : "2018.ajay.gupta@ves.ac.in",
+                role : "council member",
+                specificrole : "Technical Team"
+            }
           ],
           council_heads : [
-             {
-               email : "ajayupendragupta14@gmail.com"
-             }
-           ],
-           faculty : {
-             email : "instapicwebsite@gmail.com"
-           } 
+            {
+              name : "Vijay Gupta",
+              email : "ajaup@gmail.com"
+            }
+          ],
+          faculty : {
+            name : "Vijay G",
+            email : "instaeapp@gmail.com"
+          }  
        }
        await db.Society.create(societyobj1);
         
@@ -239,26 +255,33 @@ router.get("/create/society" , async function(req , res , next){
           title : "Greatest society of all time.",
           aboutsociety : "<p>CSI vesit</p>",
           chairperson : {
+            name : "Sunita Shahu",
             email : "2018.ajay.gupta@ves.ac.in"
           },
           normal_members : [
             {
-              email : "ajay@gmail.com"
+              name : "Ajay Gupta",
+              email : "aj@gmail.com"
             }
           ],
           council_members : [
             {
-              email : "vijay@gmail.com"
+              name :  "Ajay G",
+              email : "vi@gmail.com",
+              role : "council member",
+              specificrole : "Technical Team"
             }
           ],
           council_heads : [
             {
-              email : "ajayup@gmail.com"
+              name : "Vijay Gupta",
+              email : "ajaup@gmail.com"
             }
           ],
           faculty : {
-            email : "instapicwebsiteapp@gmail.com"
-          } 
+            name : "Vijay G",
+            email : "instaeapp@gmail.com"
+          }  
        }
        await db.Society.create(societyobj2);
 
@@ -267,24 +290,31 @@ router.get("/create/society" , async function(req , res , next){
           title : "Greatest society of all time.",
           aboutsociety : "<p>ISTE vesit</p>",
           chairperson : {
+            name : "Sunita Shahu",
             email : "2018.ajay.gupta@ves.ac.in"
           },
           normal_members : [
             {
+              name : "Ajay Gupta",
               email : "aj@gmail.com"
             }
           ],
           council_members : [
             {
-              email : "vi@gmail.com"
+              name :  "Ajay G",
+              email : "vi@gmail.com",
+              role : "council member",
+              specificrole : "Technical Team"
             }
           ],
           council_heads : [
             {
+              name : "Vijay Gupta",
               email : "ajaup@gmail.com"
             }
           ],
           faculty : {
+            name : "Vijay G",
             email : "instaeapp@gmail.com"
           } 
        }
@@ -299,20 +329,26 @@ router.get("/create/society" , async function(req , res , next){
           },
           normal_members : [
             {
+              name : "Ajay",
               email : "axj@gmail.com"
             }
           ],
           council_members : [
             {
-              email : "vsi@gmail.com"
+              name :  "Ajay G",
+              email : "vi@gmail.com",
+              role : "council member",
+              specificrole : "Technical Team"
             }
           ],
           council_heads : [
             {
+              name : "Ajay Gupta",
               email : "ajassup@gmail.com"
             }
           ],
           faculty : {
+            name : "Ajay Gupta",
             email : "instaeasspp@gmail.com"
           } 
        }

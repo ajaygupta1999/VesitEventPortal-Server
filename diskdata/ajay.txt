@@ -1,1 +1,0 @@
-{"error":{"errors":[{"domain":"global","reason":"sslRequired","message":"SSL is required to perform this operation."}],"code":403,"message":"SSL is required to perform this operation."}}
