@@ -117,13 +117,15 @@ app.use(cors());
 
 
 
-
-
-
-
-
-
-
+app.use("/" , async function(req , res , next){
+    try{
+        return res.json({ message : "Server is running" });
+    }catch(err){
+        return next({
+            message : "Got error"
+        })
+    }
+});
 
 
 // All routes is Here .... 

@@ -226,11 +226,11 @@ router.post("/:name/:societyid/edit/createspreadsheet" , async function(req , re
                         dataobj.role = "chairperson";
                         await allfacultyandchairpersonmembers.push(dataobj);
                         let dataobj2 = {};
-                        dataobj2.name = society.chairperson.name;
-                        dataobj2.email = society.chairperson.email;
+                        dataobj2.name = society.faculty.name;
+                        dataobj2.email = society.faculty.email;
                         dataobj2.role = "faculty";
                         await allfacultyandchairpersonmembers.push(dataobj2);
-                        
+                        console.log(allfacultyandchairpersonmembers);
 
                         helper.sync(model.sheetid , model.facultyandchairperson.sheetid, allfacultyandchairpersonmembers, "faculty_and_chairperson", function(err){
                             if(err){
@@ -743,7 +743,117 @@ router.post("/:societyname/:societyid/edit/managemembers/remove/facultyorchairpe
 
 
 
+router.post("/:societyname/:societyid/edit/managemembers/edit/societymember" , async function(req , res , next){
+    try{
+        // find society
+        // according to request add new member
+        // take all members data 
+        // update all data in sheet if sheet exist
+        // return society
+        let society = await db.Society.findById(req.params.societyid);
+        if(society){
+             var index = 0;
+             for(var i = 0 ; i < society.normal_members.length ; i++){
+                 if(society.normal_members[i]._id.toString() === req.body.id.toString()){
+                      index = i;
+                      break;
+                 }
+             }
 
+             society.normal_members[index].name = req.body.name;
+             society.normal_members[index].email = req.body.email;
+             await society.save();
+
+            // If SpreadSheet already Exist 
+            if(society.spreadsheets && society.spreadsheets.sheetid && req.body.accesstoken){
+                let helper = new SheetsHelper(req.body.accesstoken);
+                let allnormalmembers = [];
+                for(var k = 0; k < society.normal_members.length ; k++){
+                    let dataobj = {};
+                    dataobj.name = society.normal_members[k].name;
+                    dataobj.email = society.normal_members[k].email;
+                    await allnormalmembers.push(dataobj);
+                }
+
+                helper.sync(society.spreadsheets.sheetid , society.spreadsheets.normal_members.sheetid, allnormalmembers, "normal_member", async function(err){
+                    if(err){
+                        return next({
+                            message : "Got error while sending normal member data to spreadsheet"
+                        });
+                    }
+
+                    return res.json(society);
+
+                });
+            }else{
+                // If spreadSheet does not exist.
+                return res.json(society);
+            }  
+        }else{
+            return next({
+                message : "society does not exist."
+            })
+        }
+    }catch(err){
+        console.log(err);
+        return next({
+            message : err.message
+        })
+    }
+});
+
+router.post("/:societyname/:societyid/edit/managemembers/edit/councilmember" , async function(req , res , next){
+    try{
+        // find society
+        // according to request add new member
+        // take all members data 
+        // update all data in sheet if sheet exist
+        // return society
+        let society = await db.Society.findById(req.params.societyid);
+        if(society){
+            
+            let index = 0;
+            for(var i = 0 ; i < society.council_members.length ; i++){
+                 if(society.council_members[i]._id.toString() === req.body.id.toString()){
+                      index = i;
+                      break;
+                 }
+             }
+
+             society.council_members[index].name = req.body.name;
+             society.council_members[index].email = req.body.email;
+             society.council_members[index].role = req.body.role;
+             society.council_members[index].specificrole = req.body.specificrole;
+             await society.save();
+
+              // If SpreadSheet already Exist 
+              if(society.spreadsheets && society.spreadsheets.sheetid && req.body.accesstoken){
+                  let helper = new SheetsHelper(req.body.accesstoken);
+                  let allDataArr = society.council_members;
+                  helper.sync(society.spreadsheets.sheetid, society.spreadsheets.council_member.sheetid, allDataArr, "council_member", async function(err){
+                    if(err){
+                        return next({
+                            message : "Got error while sending normal member data to spreadsheet"
+                        });
+                    }
+                    return res.json(society);
+                 });
+              }else{
+                   // If spreadSheet does not exist.
+                   return res.json(society);
+              }  
+        }else{
+            return next({
+                message : "society does not exist."
+            })
+        }
+    }catch(err){
+        console.log(err);
+        return next({
+            message : err.message
+        })
+    }
+});
 
 
 module.exports = router;
