@@ -3,7 +3,7 @@ const { loginRequired, ensureCorrectUser } = require('../middleware/auth');
 const router   =  express.Router();
 const db       =  require("../models");
 const { ensureIndexes } = require('../models/User');
-let SheetsHelper = require('./sheets');
+let SheetsHelper = require('./Sheets');
 
 
 router.get("/:name/allmembers" , async function(req , res , next){
