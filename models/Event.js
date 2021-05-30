@@ -13,7 +13,7 @@ var EventSchema = new mongoose.Schema({
         angle : Number
    },
    registrationformlink : {
-       haveregistrationform : false,
+       haveregistrationform : { type : Boolean , default : false },
        formlink : String
    },
    creator : {
