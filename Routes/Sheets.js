@@ -89,27 +89,6 @@ SheetsHelper.prototype.createSpreadsheet = async function(title, callback) {
 
           // console.log(JSON.stringify(response, null, 2));
           return callback(null, spreadsheet);
-        // const request = {
-        //     // The spreadsheet to request.
-        //     spreadsheetId:  spreadsheet.spreadsheetId,  // TODO: Update placeholder value.
-  
-        //     // The ranges to retrieve from the spreadsheet.
-        //     ranges: ['Data!A1:D1'],  
-  
-        //     // True if grid data should be returned.
-        //     // This parameter is ignored if a field mask was set in the request.
-        //     includeGridData: false,  // TODO: Update placeholder value
-        //  };
-   
-          // try {
-          //     const responsesec = (await self.service.spreadsheets.get(request)).data;
-          //     // TODO: Change code below to process the `response` object:\
-          //     console.log("Got spreadsheet data from backend ==> " , JSON.stringify(responsesec, null, 2));
-              
-              
-          // } catch (err) {
-          //     console.error(err.message);
-          // }
         });
     });
 };

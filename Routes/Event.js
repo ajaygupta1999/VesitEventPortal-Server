@@ -5,9 +5,37 @@ const router =  express.Router();
 
 
 
+
+// Get Specific Event Data  
+router.get("/event/:eventid/getspecificevent" , async function(req , res , next){
+    try{ 
+       
+      let event = await db.Event.findById(req.params.eventid).populate({
+        path : "guests.registered_guests eventtakers.registered_eventtakers guests.unregistered_guests eventtakers.unregistered_eventtakers sponsors society registrations creator", 
+        populate : { path : "typeuser typeguest typeeventtaker" }
+      }).exec();
+
+      if(event){
+            return res.json({
+              event
+            });
+          
+      }else{
+          return next({
+            message : "Event not found"
+          });
+      }
+    }catch(err){
+        console.log(err);
+        return next(err);
+    }
+});
+
+
+
+// Get all events details ==
 router.get("/event/allevents" ,async function(req , res){
      try{
-
         let dballevents = await db.Event.find({}).populate({
             path : "guests.registered_guests eventtakers.registered_eventtakers guests.unregistered_guests eventtakers.unregistered_eventtakers sponsors", 
             populate : { path : "typeuser typeguest typeeventtaker" }
@@ -19,27 +47,38 @@ router.get("/event/allevents" ,async function(req , res){
         return res.json({
             allEvents
         });
-        
-        // dballevents.forEach(async function(dbevent){
-        //     var eventobj = {
-        //         id : dbevent._id,
-        //         name : dbevent.name,
-        //         date : dbevent.date,
-        //         time : dbevent.time,
-        //         category : dbevent.category,
-        //         imgurl : dbevent.imgurl,
-        //         shortdesc : dbevent.shortdesc,
-        //         fulldesc : dbevent.fulldesc,
-        //     }
-        //     await allEvents.push(eventobj);
-        // });
          
      }catch(err){
          return next(err);
      }
-    
 });
 
+
+// Create Event details ==
+router.get("/event/user/:userid/event/:eventid/createdeventsdetails" , loginRequired , ensureCorrectUser , async function(req , res){
+    try {
+           
+        // check for user admin
+        let event = await db.Event.findById(req.params.eventid);
+        if(event){  
+             return res.json({
+                 event : event
+             });
+   
+        }else{
+             return next({
+                message : "Event does not exist."
+             })
+        }
+    }catch(err){
+         console.log(err);
+         return next(err);
+    }
+});
+
+
+
+// Register for event ==
 router.post("/event/:eventid/register/user/:userid" , loginRequired , ensureCorrectUser , async function(req , res , next){
      try{
        
@@ -81,7 +120,7 @@ router.post("/event/:eventid/register/user/:userid" , loginRequired , ensureCorr
 
 
 
-
+// Unregister event == 
 router.post("/event/:eventid/unregister/user/:userid" , loginRequired , ensureCorrectUser , async function(req , res , next){
     try{
         
@@ -117,6 +156,7 @@ router.post("/event/:eventid/unregister/user/:userid" , loginRequired , ensureCo
 });
 
 
+// Get all registered events ==
 router.get("/event/user/:userid/registeredevents" , loginRequired , ensureCorrectUser , async function(req , res, next){
     try{
 

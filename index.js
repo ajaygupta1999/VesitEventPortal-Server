@@ -1,13 +1,17 @@
 require('dotenv').config();
-var express          = require('express'),
-    app              = express(),
-    cors             = require('cors'),
-    bodyParser       = require('body-parser'),
-    errorHandler     = require("./handlers/error"),
-    authRoutes       = require("./Routes/Auth"),
-    userRoutes       = require('./Routes/User'),
-    eventRoutes       = require("./Routes/Event"),
-    societyRoutes      = require("./Routes/Society");
+var express              = require('express'),
+    app                  = express(),
+    cors                 = require('cors'),
+    bodyParser           = require('body-parser'),
+    errorHandler         = require("./handlers/error"),
+    authRoutes           = require("./Routes/Auth"),
+    userRoutes           = require('./Routes/User'),
+    eventRoutes          = require("./Routes/Event"),
+    societyRoutes        = require("./Routes/Society"),
+    populateRoutes       = require("./Routes/Populate"),
+    createEventRoutes    = require("./Routes/CreateEvent"),
+    societyManageMembersRoutes = require("./Routes/SocietyManageMembers");
+
 
 
 app.use(bodyParser.json());
@@ -16,23 +20,13 @@ app.use(cors());
 
 
 
-
-
-// app.use("/" , async function(req , res , next){
-//     try{
-//         return res.json({ message : "Server is running" });
-//     }catch(err){
-//         return next({
-//             message : "Got error"
-//         })
-//     }
-// });
-
-
-// All routes is Here .... 
+// All routes is Here ....
+app.use("/api/populatedata" ,  populateRoutes);
 app.use("/api/auth" , authRoutes);
-app.use(userRoutes);
+app.use("/api/createevent" , createEventRoutes);
+app.use("/api/user" , userRoutes);
 app.use("/api/society" , societyRoutes);
+app.use("/api/society" , societyManageMembersRoutes);
 app.use("/api/" , eventRoutes);
 
 
