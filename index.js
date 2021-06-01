@@ -21,7 +21,7 @@ app.use(cors());
 
 
 // All routes is Here ....
-app.use("/api/populatedata" ,  populateRoutes);
+// app.use("/api/populatedata" ,  populateRoutes);
 app.use("/api/auth" , authRoutes);
 app.use("/api/createevent" , createEventRoutes);
 app.use("/api/user" , userRoutes);
