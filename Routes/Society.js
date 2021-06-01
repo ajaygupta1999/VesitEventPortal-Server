@@ -42,7 +42,7 @@ router.get("/:name/allevents" , async function(req , res , next){
 // Society Full Details ==
 router.get("/:name/allData" , async function(req , res , next){
     try{
-        let society =  await db.Society.findOne({name : req.params.name}).populate("normal_member council_members council_head facult_details events").exec();
+        let society =  await db.Society.findOne({name : req.params.name}).populate("events").exec();
         return res.json({
             society
         })
@@ -167,9 +167,11 @@ router.post("/:societyname/edit/societydetails/editor/:userid" , loginRequired ,
           if(Object.keys(societyimage).length > 0){
             society.societyimage = societyimage;
           }
+
           if(Object.keys(societybackground).length > 0){
             society.societybackground = societybackground;
           }
+
           society.title = req.body.title;
           await society.save();
 
