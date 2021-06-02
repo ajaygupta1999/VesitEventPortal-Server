@@ -17,6 +17,6 @@ RUN npm install
 
 # Copy local code to the container image.
 COPY . ./
-EXPOSE 8080
+EXPOSE 443
 # Run the web service on container startup.
 CMD node index.js
