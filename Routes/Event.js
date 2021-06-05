@@ -37,7 +37,7 @@ router.get("/event/:eventid/getspecificevent" , async function(req , res , next)
 router.get("/event/allevents" ,async function(req , res){
      try{
         let dballevents = await db.Event.find({}).populate({
-            path : "guests.registered_guests eventtakers.registered_eventtakers guests.unregistered_guests eventtakers.unregistered_eventtakers sponsors", 
+            path : "society guests.registered_guests eventtakers.registered_eventtakers guests.unregistered_guests eventtakers.unregistered_eventtakers sponsors", 
             populate : { path : "typeuser typeguest typeeventtaker" }
         }).exec();
 
