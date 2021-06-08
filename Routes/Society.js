@@ -6,6 +6,8 @@ const { loginRequired , ensureCorrectUser }  = require("../middleware/auth");
 const imageUpload = require("../handlers/ImageUpload");
 
 
+
+
 // Get society members details ==
 router.get("/:name/allmembers" , async function(req , res , next){
     try{
@@ -42,7 +44,10 @@ router.get("/:name/allevents" , async function(req , res , next){
 // Society Full Details ==
 router.get("/:name/allData" , async function(req , res , next){
     try{
-        let society =  await db.Society.findOne({name : req.params.name}).populate("events").exec();
+        let society =  await db.Society.findOne({name : req.params.name}).populate({
+            path : "events", 
+            populate : { path : "registrations" }
+        }).exec();
         return res.json({
             society
         })

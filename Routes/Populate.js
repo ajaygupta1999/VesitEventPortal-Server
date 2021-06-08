@@ -263,6 +263,33 @@ router.get("/guests" , async function(req , res , next){
 
 
 
+ router.get("/addcouncilheads/ieee" , async function(req , res ,next){
+    try{
+       let society = await db.Society.findOne({ name : "ieee" });
+       let obj1 = {
+         name : "Vijay gupta2",
+         email : "vesiteventsportal@gmail.com"
+       }
+
+       let obj2 = {
+         name : "Vijay5555",
+         email : "vesitquerybot@gmail.com"
+       }
+
+       society.council_heads.push(obj1);
+       society.council_heads.push(obj2);
+       await society.save();
+
+       return res.json("done");
+    }catch(err){
+      return next({
+        message : err.message
+      });
+    }
+ });
+
+
+
 
 
 
