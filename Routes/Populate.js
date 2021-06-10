@@ -137,7 +137,15 @@ router.get("/guests" , async function(req , res , next){
              {
                name : "Vijay Gupta",
                email : "ajaygupta14@gmail.com"
-             }
+             },
+             {
+              name : "Vijay Gupta",
+              email : "vesiteventsportal@gmail.com"
+            },
+            {
+              name : "Vijay Gupta",
+              email : "vesitquerybot@gmail.com"
+            }
            ],
            faculty : {
              name : "Vijay G",
