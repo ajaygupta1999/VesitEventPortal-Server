@@ -4,7 +4,19 @@ const db = require('../models');
 const router =  express.Router();
 
 
-
+router.get("/health", async function(req, res, next){
+   try{
+     return res.json({
+        status: 200,
+        message: "App is running"
+     });
+   }catch(err){
+    return next({
+        status: 500, 
+        message : "Something went wrong"
+      });
+   }
+});
 
 // Get Specific Event Data  
 router.get("/event/:eventid/getspecificevent" , async function(req , res , next){

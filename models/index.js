@@ -1,10 +1,10 @@
 const mongoose    =    require('mongoose');
 mongoose.set("debug" , true);
 mongoose.Promise = Promise;
+console.log("Database url" + process.env.DATABASEURL);
 mongoose.connect(process.env.DATABASEURL , { 
     useNewUrlParser: true, 
-    useCreateIndex : true, 
-    seUnifiedTopology: true,
+    useCreateIndex : true,
     keepAlive : true 
 });
 
